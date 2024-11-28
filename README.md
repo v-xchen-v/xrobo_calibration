@@ -24,6 +24,33 @@ This project is licensed under the MIT License.
 
 The `notebooks/` directory contains Jupyter notebooks for tutorials and visualizations. These notebooks demonstrate how to use the package and provide tools to visualize calibration results.
 
+## Advanced Tutorials
+
+In addition to the basic package tutorials, the `notebooks/detailed_tutorials/` folder contains advanced topics, including:
+
+- **3D Transformation Basics**: Understand the mathematics and visualization of transformations.
+- **Kinematics Primer**: Learn forward and inverse kinematics for robotic arms.
+- **Calibration Algorithms**: Dive into advanced calibration techniques like least squares.
+
+### Running Tutorials
+1. Install JupyterLab:
+   ```bash
+   pip install jupyterlab
+
+2. Launch the notebooks
+```bash
+jupyter-lab notebooks/detailed_tutorials/
+```
+---
+
+### **Benefits**
+- Keeps basic tutorials clean and focused on package usage.
+- Provides a dedicated space for users interested in deeper learning or advanced techniques.
+- Offers a foundation for community contributions to advanced topics.
+
+Let me know if you need help creating any specific tutorial content!
+
+
 ### Running Notebooks
 1. Install JupyterLab:
    ```bash
