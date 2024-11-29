@@ -15,6 +15,7 @@ setup(
         'scipy',
         'matplotlib',
         'opencv-python',
+        'imutils',
     ],
     extras_require={
         # Optional dependencies for development
