@@ -83,25 +83,28 @@ xrobot_calibration/
 ├── xrobot_calibration/          # Main package directory
 │   ├── camera_calib/            # Submodule for camera calibration
 │   │   ├── __init__.py
-│   │   ├── calibration.py
-│   │   ├── utils.py               # Camera-specific utilities
+│   │   ├── calibration.py       # High-level interfaces
+│   │   ├── camera_calibrator.py # CameraCalibrator class
+│   │   ├── intrinsic.py         # Intrinsic calibration logic
+│   │   ├── extrinsic.py         # Extrinsic calibration logic
+│   │   ├── utils.py             # Camera-specific utilities
 │   │   └── ...
 │   ├── arm_calib/               # Submodule for robotic arm calibration
 │   │   ├── __init__.py
 │   │   ├── calibration.py
-│   │   ├── utils.py               # Arm-specific utilities
+│   │   ├── utils.py             # Arm-specific utilities
 │   │   └── ...
 │   ├── mobile_base_calib/       # Submodule for mobile base calibration
 │   │   ├── __init__.py
 │   │   ├── calibration.py
-│   │   ├── utils.py               # Mobile-base-specific utilities
+│   │   ├── utils.py             # Mobile-base-specific utilities
 │   │   └── ...
 │   ├── __init__.py              # Top-level init for the package
-│   ├── common/                    # Shared utility module
+│   ├── common/                  # Shared utility module
 │   │   ├── __init__.py
-│   │   ├── math_utils.py          # Math-related utilities
-│   │   ├── io_utils.py            # I/O-related utilities
-│   │   ├── transform_utils.py     # Transformation-related utilities
+│   │   ├── math_utils.py        # Math-related utilities
+│   │   ├── io_utils.py          # I/O-related utilities
+│   │   ├── transform_utils.py   # Transformation-related utilities
 │   │   └── ...
 │   └── ...
 ├── notebooks/                   # Jupyter notebooks for tutorials and visualization
