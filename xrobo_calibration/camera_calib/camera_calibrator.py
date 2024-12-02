@@ -8,6 +8,7 @@ import json
 import os
 import datetime
 from typing import List, Optional, Dict
+from .pattern_detection import generate_object_points
 
 class CameraCalibrator:
     def __init__(self, image_size, log_file="calibration_log.json"):
@@ -83,12 +84,17 @@ class CameraCalibrator:
     
     def calibrate_extrinsic_single_image(
         self,
-        object_points: np.ndarray,
-        image_points: np.ndarray
+        image_points: np.ndarray,
+        pattern_size: Optional[Dict[str, float]] = None,
+        object_points: Optional[List[np.ndarray]] = None, 
     ) -> Dict[str, np.ndarray]:
         """
         Calibrate extrinsic parameters for a single image.
 
+        Supports two modes of input:
+        1. image_points, image_size, and pattern_size: Automatically generates object_points.
+        2. image_points, object_points, and image_size: Uses provided object_points directly.
+        
         Args:
             object_points (np.ndarray): 3D points in the world coordinate system.
             image_points (np.ndarray): Corresponding 2D points in the image coordinate system.
@@ -99,16 +105,22 @@ class CameraCalibrator:
         if self.intrinsic_matrix is None or self.distortion_coeffs is None:
             raise ValueError("Intrinsic parameters must be calibrated first or provided.")
 
+                # Handling Mode 1: Generate object_points from pattern_size
+        if object_points is None and pattern_size is not None:
+            object_points = generate_object_points(pattern_size, num_images=len(image_points))
+        elif object_points is None:
+            raise ValueError("Either object_points or pattern_size must be provided.")
+        
+        # Ensure object_points are Numpy arrays
+        object_points = [np.array(points, dtype=np.float32) for points in object_points]
+    
         # Calculate pose for the single image
-        success, results = calibrate_camera_extrinsic_solvepnp(
+        results = calibrate_camera_extrinsic_solvepnp(
             object_points=object_points,
             image_points=image_points,
             intrinsic_matrix=self.intrinsic_matrix,
             distortion_coeffs=self.distortion_coeffs
         )
-        
-        if not success:
-            raise RuntimeError("solvePnP failed to calculate extrinsic parameters for the single image.")
 
         return {
             "rotation_vector": results["rotation_vector"],
@@ -117,25 +129,42 @@ class CameraCalibrator:
         }
     
     def calibrate_extrinsic_per_image(self, 
-                            object_points: List[np.ndarray], 
                             image_points: List[np.ndarray], 
-                            method: str ="solvePnP"):
+                            pattern_size: Optional[Dict[str, float]] = None,
+                            object_points: Optional[List[np.ndarray]] = None, 
+                            method: str ="calibrateCamera"):
         """
         Perform extrinsic camera calibration.
+        
+        Supports two modes of input:
+        1. image_points, image_size, and pattern_size: Automatically generates object_points.
+        2. image_points, object_points, and image_size: Uses provided object_points directly.
         
         Supports two methods:
         1. "solvePnP": Use cv2.solvePnP for extrinsic calibration. Assumes intrinsic parameters are already calibrated.
         2. "calibrateCamera": Use cv2.calibrateCamera for extrinsic calibration with unknown intrinsic parameters.
 
         Args:
-            object_points (list): 3D points in world coordinates.
             image_points (list): 2D points in image coordinates.
+            pattern_size (Optional[Dict[str, float]]): For mode 1, dimensions of the calibration pattern:
+                                                   {"rows": int, "cols": int, "square_size": float}.
+            object_points (Optional[List[np.ndarray]]): For mode 2, list of 3D points in object coordinates.
+
             method (str): Method to use for extrinsic calibration ("solvePnP" or "calibrateCamera").
 
         Returns:
             list: Extrinsic calibration results for each image. Each item is a dict with keys:
             {"rotation_vector": np.ndarray, "translation_vector": np.ndarray, "reprojection_error": float}
         """
+        
+        # Handling Mode 1: Generate object_points from pattern_size
+        if object_points is None and pattern_size is not None:
+            object_points = generate_object_points(pattern_size, num_images=len(image_points))
+        elif object_points is None:
+            raise ValueError("Either object_points or pattern_size must be provided.")
+        
+        # Ensure object_points are Numpy arrays
+        object_points = [np.array(points, dtype=np.float32) for points in object_points]
         
         if len(object_points) != len(image_points):
             raise ValueError("The number of object_points and image_points must match.")
@@ -147,17 +176,14 @@ class CameraCalibrator:
                 raise ValueError("Intrinsic parameters must be calibrated first.")
             
             # Perform extrinsic calibration using cv2.solvePnP
-            success, results = calibrate_camera_extrinsic_solvepnp(
+            results = calibrate_camera_extrinsic_solvepnp(
                 object_points=object_points, 
                 image_points=image_points, 
                 intrinsic_matrix=self.intrinsic_matrix, 
                 distortion_coeffs=self.distortion_coeffs)
             
-            if not success:
-                raise ValueError("Extrinsic calibration failed.")
-            
             # Loop through each pair
-            for i, (rvec, tvec) in enumerate(zip(results["rotation_vectors"], results["translation_vectors"])):
+            for i, (rvec, tvec) in enumerate(zip(results["rotation_vector"], results["translation_vector"])):
                 extrinsic_params.append({
                     "rotation_vector": rvec,
                     "translation_vector": tvec,
@@ -166,16 +192,13 @@ class CameraCalibrator:
             
         elif method == "calibrateCamera":
             # Use cv2.calibrateCamera for intrinsic and extrinsic calibration
-            success, results = calibrate_camera_extrinsic(
+            results = calibrate_camera_extrinsic(
                 object_points=object_points, 
                 image_points=image_points, 
                 image_size=self.image_size)
-        
-            if not success:
-                raise RuntimeError("Extrinsic calibration failed.")
             
-                        # Loop through each pair
-            for i, (rvec, tvec) in enumerate(zip(results["rotation_vectors"], results["translation_vectors"])):
+            # Loop through each pair
+            for i, (rvec, tvec) in enumerate(zip(results["rotation_vector"], results["translation_vector"])):
                 extrinsic_params.append({
                     "rotation_vector": rvec,
                     "translation_vector": tvec,
@@ -184,8 +207,15 @@ class CameraCalibrator:
                 
             self.intrinsic_matrix = results["intrinsic_matrix"]
             self.distortion_coeffs = results["distortion_coeffs"]
+            
+        total_mean_error = np.mean([params["reprojection_error"] for params in extrinsic_params])
+        results = {
+            "rotation_vector": [params["rotation_vector"] for params in extrinsic_params],
+            "translation_vector": [params["translation_vector"] for params in extrinsic_params],
+            "reprojection_error": total_mean_error
+        }
 
-        return extrinsic_params
+        return results
 
     def log_result(self, data):
         """

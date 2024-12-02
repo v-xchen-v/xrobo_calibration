@@ -12,7 +12,7 @@ def calibrate_camera_extrinsic_solvepnp(
     distortion_coeffs: np.ndarray,
     pattern_size: Optional[Dict[str, float]] = None,
     object_points: Optional[List[np.ndarray]] = None
-) -> Tuple[bool, Dict]:
+) -> Dict:
     """
     Calculate extrinsic parameters using solvePnP. 
     This function assumes that the intrinsic parameters are known.
@@ -30,7 +30,7 @@ def calibrate_camera_extrinsic_solvepnp(
         object_points (Optional[List[np.ndarray]]): For mode 2, list of 3D points in object coordinates
 
     Returns:
-        Tuple[bool, Dict]: Success flag and extrinsic calibration results.
+        Dict: Extrinsic calibration results, including rotation and translation vectors.
     """
     # rotation_vector = np.array([0.1, 0.2, 0.3])
     # translation_vector = np.array([0.5, 0.5, 1.0])
@@ -42,8 +42,8 @@ def calibrate_camera_extrinsic_solvepnp(
         raise ValueError("Either object_points or pattern_size must be provided.")
     
     # make sure object_points and image_points are Numpy arrays
-    object_points = [np.array(points, dtype=np.float32) for points in object_points]
-    image_points = [np.array(points, dtype=np.float32) for points in image_points]
+    object_points = np.array([np.array(points, dtype=np.float32) for points in object_points])
+    image_points = np.array([np.array(points, dtype=np.float32) for points in image_points])
     intrinsic_matrix = np.array(intrinsic_matrix, dtype=np.float32)
     distortion_coeffs = np.array(distortion_coeffs, dtype=np.float32)
     
@@ -98,7 +98,7 @@ def calibrate_camera_extrinsic(
     object_points: Optional[List[np.ndarray]] = None,
     intrinsic_matrix: Optional[np.ndarray] = None,
     distortion_coeffs: Optional[np.ndarray] = None
-) -> Tuple[bool, Dict]:
+) -> Dict:
     """
     Calculate extrinsic parameters using cv2.calibrateCamera.
     If pass in intrinsic parameters, will refine the given intrinsic parameters instead of estimating them from scratch.
@@ -112,7 +112,7 @@ def calibrate_camera_extrinsic(
         distortion_coeffs (np.ndarray): Distortion coefficients.
         
     Returns:
-        Tuple[bool, Dict]: Success flag and extrinsic calibration results.
+        Dict: Extrinsic calibration results, including rotation and translation vectors.
     """
     if object_points is None and pattern_size is not None:
         object_points = generate_object_points(pattern_size, num_images=len(image_points))
