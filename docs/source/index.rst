@@ -8,9 +8,10 @@ Welcome to xrobo_calibration's documentation!
 
 .. toctree::
    :maxdepth: 2
-   .. :caption: Contents:
+   :caption: Contents:
 
    install/index.rst
+   examples/index.rst
 
 
 
