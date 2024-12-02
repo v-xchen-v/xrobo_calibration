@@ -4,6 +4,7 @@ from .file_io import save_parameters, load_parameters
 import cv2
 from typing import Optional
 from .pattern_detection import generate_object_points
+from .utils import calculate_reprojection_error
 
 def calibrate_camera_extrinsic_solvepnp(
     image_points: List[np.ndarray], 
@@ -66,16 +67,24 @@ def calibrate_camera_extrinsic_solvepnp(
         rvecs.append(rotation_vector)
 
     # calculate mean reprojection error of each image
-    error = 0
-    for i in range(len(object_points)):
-        image_points_est, _ = cv2.projectPoints(
-            objectPoints=object_points[i],
-            rvec=rvecs[i],
-            tvec=tvecs[i],
-            cameraMatrix=intrinsic_matrix,
-            distCoeffs=distortion_coeffs)
-        error += cv2.norm(image_points[i], image_points_est, cv2.NORM_L2) / len(image_points[i])
-    mean_error = error / len(object_points)
+    # error = 0
+    # for i in range(len(object_points)):
+    #     image_points_est, _ = cv2.projectPoints(
+    #         objectPoints=object_points[i],
+    #         rvec=rvecs[i],
+    #         tvec=tvecs[i],
+    #         cameraMatrix=intrinsic_matrix,
+    #         distCoeffs=distortion_coeffs)
+    #     error += cv2.norm(image_points[i], image_points_est, cv2.NORM_L2) / len(image_points[i])
+    # mean_error = error / len(object_points)
+    mean_error = calculate_reprojection_error(
+                    object_points=object_points,
+                    image_points=image_points,
+                    tvecs=tvecs,
+                    rvecs=rvecs,
+                    mtx=intrinsic_matrix,
+                    dist=distortion_coeffs,
+                    verbose=False)
     
     results={"rotation_vector": rvecs, "translation_vector": tvecs,
             "reprojection_error": mean_error}

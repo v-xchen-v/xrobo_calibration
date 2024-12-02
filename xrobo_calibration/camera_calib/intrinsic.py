@@ -4,12 +4,16 @@ from .file_io import save_parameters, load_parameters
 from typing import Optional
 import cv2
 from .pattern_detection import generate_object_points
+from .utils import calculate_reprojection_error
+
+
 
 def calibrate_camera_intrinsic(
     image_points: List[np.ndarray], 
     image_size: Tuple[int, int], 
     pattern_size: Optional[Dict[str, float]] = None,
     object_points: Optional[List[np.ndarray]] = None, 
+    verbose: bool = False,
 ) -> Dict:
     """
     Calibrate the intrinsic parameters of the camera.
@@ -61,6 +65,24 @@ def calibrate_camera_intrinsic(
         distCoeffs=None
     )
     
+    # mean_error = 0
+    # for i in range(len(object_points)):
+    #     imgpoints_est, _ = cv2.projectPoints(object_points[i], rvecs[i], tvecs[i], intrinsic_matrix, distortion_coeffs)
+    #     error = cv2.norm(image_points[i], imgpoints_est, cv2.NORM_L2)/len(imgpoints_est)
+    #     if verbose:
+    #         print(f"{i} error: {error}")
+    #     mean_error += error
+    # if verbose:
+    #     print( "total error: {}".format(mean_error/len(object_points)) )
+    
+    calculate_reprojection_error(object_points=object_points,
+                                 image_points=image_points,
+                                 tvecs=tvecs,
+                                 rvecs=rvecs,
+                                 mtx=intrinsic_matrix,
+                                 dist=distortion_coeffs,
+                                 verbose=verbose)
+        
     # Check for calibration success
     if not ret:
         raise RuntimeError("Camera calibration failed. Check the input data.")
