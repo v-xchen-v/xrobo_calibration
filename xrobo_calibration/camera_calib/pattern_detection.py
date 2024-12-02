@@ -6,6 +6,7 @@ import os
 def get_image_points(
     images: List[np.ndarray], 
     pattern_size: Dict[str, int], 
+    show: bool = False,
     criteria: Tuple[int, int, float] = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 ) -> List[np.ndarray]:
     """
@@ -44,6 +45,9 @@ def get_image_points(
     if not image_points:
         raise RuntimeError("No valid image points detected. Check the input images and pattern size.")
 
+    if show:
+        visualize_and_save_image_points(images, image_points, pattern_size, show=True)
+        
     return image_points
 
 def visualize_and_save_image_points(
