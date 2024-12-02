@@ -6,7 +6,7 @@ if module_path not in sys.path:
     sys.path.append(module_path)
     
 import cv2
-from xrobo_calibration.camera_calib import calibrate_camera_extrinsic_solvepnp
+from xrobo_calibration.camera_calib.extrinsic import calibrate_camera_extrinsic_solvepnp
 from xrobo_calibration.camera_calib.pattern_detection import get_image_points
 
 
