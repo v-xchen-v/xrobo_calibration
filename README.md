@@ -2,9 +2,9 @@
 The xrobo_calibration project provides a robust framework for calibrating robotic systems. It supports tools and methodologies for determining transformations between key components, such as cameras, robotic arms, and mobile base using calibration patterns like chessboards or markers. 
 
 ## Features
-- Camera calibration (`xrobot_camera_calib`)
-- Robotic arm calibration (`xrobot_arm_calib`)
-- Mobile base calibration (`xrobot_mobile_base_calib`)
+- Camera calibration (`xrobo_camera_calib`)
+- Robotic arm calibration (`xrobo_arm_calib`)
+- Mobile base calibration (`xrobo_mobile_base_calib`)
 
 ## Installation
 ```bash
@@ -75,10 +75,11 @@ You can load the data programmatically using helper functions:
 ```python
 from xrobot_calibration.common.data_utils import get_sample_data_path
 path = get_sample_data_path() + "/images/chessboard_01.jpg"
-
+```
 
 ## Directory Structure
-```
+
+```bash
 xrobot_calibration/
 ├── xrobot_calibration/          # Main package directory
 │   ├── camera_calib/            # Submodule for camera calibration

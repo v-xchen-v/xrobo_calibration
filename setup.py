@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='my_package',
+    name='xrobo_calibration',
     version='0.1.0',
     author='Xi Chen',
     author_email='xichen0907@gmail.com',
