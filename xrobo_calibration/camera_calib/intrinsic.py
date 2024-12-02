@@ -63,7 +63,7 @@ def calibrate_camera_intrinsic(
     ret, intrinsic_matrix, distortion_coeffs, rvecs, tvecs = cv2.calibrateCamera(
         objectPoints=object_points, 
         imagePoints=image_points, 
-        imagesize=image_size, 
+        imageSize=image_size, 
         cameraMatrix=None, 
         distCoeffs=None
     )

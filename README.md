@@ -85,9 +85,11 @@ xrobot_calibration/
 │   │   ├── __init__.py
 │   │   ├── calibration.py       # High-level interfaces
 │   │   ├── camera_calibrator.py # CameraCalibrator class
-│   │   ├── intrinsic.py         # Intrinsic calibration logic
-│   │   ├── extrinsic.py         # Extrinsic calibration logic
+│   │   ├── intrinsic.py         # Intrinsic calibration logic and load/save functions
+│   │   ├── extrinsic.py         # Extrinsic calibration logic and load/save functions
+│   │   ├── file_io.py           # Shared file I/O for saving/loading
 │   │   ├── utils.py             # Camera-specific utilities
+│   │   ├── pattern_detection.py  # Specific file for pattern detectio
 │   │   └── ...
 │   ├── arm_calib/               # Submodule for robotic arm calibration
 │   │   ├── __init__.py
