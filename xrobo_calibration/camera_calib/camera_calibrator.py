@@ -9,6 +9,7 @@ import os
 import datetime
 from typing import List, Optional, Dict
 from .pattern_detection import generate_object_points
+from .visualization import visualize_and_save_projected_corners
 
 class CameraCalibrator:
     def __init__(self, image_size, log_file="calibration_log.json"):
@@ -21,8 +22,8 @@ class CameraCalibrator:
         self.image_size = image_size
         self.intrinsic_matrix = None
         self.distortion_coeffs = None
-        self.rotation_vector = None
-        self.translation_vector = None
+        self.rotation_vectors = None
+        self.translation_vectors = None
         self.log_file = log_file
 
     def get_image_points(self, images: list, pattern_size: dict, show=False):
@@ -122,6 +123,9 @@ class CameraCalibrator:
             distortion_coeffs=self.distortion_coeffs
         )
 
+        self.rotation_vectors = results["rotation_vector"]
+        self.translation_vectors = results["translation_vector"]
+        
         return {
             "rotation_vector": results["rotation_vector"],
             "translation_vector": results["translation_vector"],
@@ -215,8 +219,45 @@ class CameraCalibrator:
             "reprojection_error": total_mean_error
         }
 
+        self.rotation_vectors = results["rotation_vector"]
+        self.translation_vectors = results["translation_vector"]
+        
         return results
 
+    def visualize_projected_corners(
+        self,
+        images: List[np.ndarray],
+        object_points: List[np.ndarray],
+        pattern_size: tuple,
+        output_dir: str = None,
+        show: bool = False
+    ) -> None:
+        """
+        Visualize and save projected 3D points as chessboard corners on the images.
+
+        Args:
+            images (List[np.ndarray]): List of input images.
+            object_points (List[np.ndarray]): List of 3D object points for each image.
+            pattern_size (tuple): Chessboard pattern size as (rows, cols).
+            output_dir (str): Directory to save the images with projected points.
+            show (bool): Whether to display the images with points.
+        """
+        if not self.rotation_vectors or not self.translation_vectors:
+            raise ValueError("Extrinsic parameters are not calibrated yet.")
+
+        visualize_and_save_projected_corners(
+            images=images,
+            object_points=object_points,
+            rotation_vectors=self.rotation_vectors,
+            translation_vectors=self.translation_vectors,
+            intrinsic_matrix=self.intrinsic_matrix,
+            distortion_coeffs=self.distortion_coeffs,
+            pattern_size=pattern_size,
+            output_dir=output_dir,
+            show=show
+        )
+
+        
     def log_result(self, data):
         """
         Log calibration results and error metrics to a file.
@@ -292,14 +333,14 @@ class CameraCalibrator:
         Returns:
             float: Mean reprojection error.
         """
-        if self.intrinsic_matrix is None or self.rotation_vector is None or self.translation_vector is None:
+        if self.intrinsic_matrix is None or self.rotation_vectors is None or self.translation_vectors is None:
             raise ValueError("Calibration parameters are incomplete. Perform calibration first.")
 
         # Project 3D points to 2D using the calibrated parameters
         projected_points, _ = cv2.projectPoints(
             np.array(object_points),
-            self.rotation_vector,
-            self.translation_vector,
+            self.rotation_vectors,
+            self.translation_vectors,
             self.intrinsic_matrix,
             self.distortion_coeffs
         )
