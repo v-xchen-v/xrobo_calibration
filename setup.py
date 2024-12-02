@@ -22,7 +22,11 @@ setup(
         "dev":[
             "build", # For building the package
             "twine", # For uploading the package,
-            "pytest", # For running tests
+            "pytest", # For running tests,
+            "sphinx", # For generating documentation,
+            "sphinx_rtd_theme", # For a nice theme in the documentation
+            "sphinx-autodoc-typehints", # For type hints in the documentation
+            "myst-parser", # For markdown support in the documentation
         ],
     },
     classifiers=[
