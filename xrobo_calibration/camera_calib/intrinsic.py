@@ -3,6 +3,7 @@ import numpy as np
 from .file_io import save_parameters, load_parameters
 from typing import Optional
 import cv2
+from .pattern_detection import generate_object_points
 
 def calibrate_camera_intrinsic(
     image_points: List[np.ndarray], 
@@ -44,15 +45,7 @@ def calibrate_camera_intrinsic(
     
     # Handling Mode 1: Generate object_points from pattern_size
     if object_points is None and pattern_size is not None:
-        rows, cols, square_size = pattern_size["rows"], pattern_size["cols"], pattern_size["square_size"]
-        
-        # Generate object points for a single pattern
-        object_points_single = np.zeros((rows * cols, 3), np.float32)
-        object_points_single[:, :2] = (
-            np.mgrid[0:cols, 0:rows].T.reshape(-1, 2) * square_size
-        )
-        # Replicate the object points for all images
-        object_points = [object_points_single for _ in range(len(image_points))]
+        object_points = generate_object_points(pattern_size, num_images=len(image_points))
     elif object_points is None:
         raise ValueError("Either object_points or pattern_size must be provided.")
     
@@ -95,7 +88,8 @@ def load_intrinsic(filepath, format="json"):
         "distortion_coeffs": data["distortion_coeffs"]
     }
     
-def save_intrinsic(filepath, intrinsic_matrix, distortion_coeffs, format="json"):
+def save_intrinsic(filepath, intrinsic_matrix, distortion_coeffs, reprojection_error, 
+                   format="json"):
     """
     Save intrinsic calibration data to a file in the specified format.
 
@@ -103,10 +97,12 @@ def save_intrinsic(filepath, intrinsic_matrix, distortion_coeffs, format="json")
         filepath (str): Path to the output file.
         intrinsic_matrix (np.ndarray): Intrinsic matrix.
         distortion_coeffs (np.ndarray): Distortion coefficients.
+        reprojection_error (float): Reprojection error from calibration.
         format (str): Format to save the file ("json" or "npy").
     """
     data = {
         "intrinsic_matrix": intrinsic_matrix,
-        "distortion_coeffs": distortion_coeffs
+        "distortion_coeffs": distortion_coeffs,
+        "reprojection_error": reprojection_error
     }
     save_parameters(filepath, data, format)

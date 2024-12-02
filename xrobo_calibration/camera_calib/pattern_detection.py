@@ -97,3 +97,29 @@ def visualize_and_save_image_points(
 
     if show:
         cv2.destroyAllWindows()
+
+def generate_object_points(
+    pattern_size: Dict[str, int], 
+    num_images: int,
+) -> np.ndarray:
+    """
+    Generate object points for a calibration pattern based on the pattern size and square size.
+
+    Args:
+        pattern_size (Dict[str, int]): Dimensions of the calibration pattern {"rows": int, "cols": int}.
+        num_images (int): Number of images for which object points are generated.
+        
+    Returns:
+        np.ndarray: 3D object points for the calibration pattern.
+    """
+    rows, cols, square_size = pattern_size["rows"], pattern_size["cols"], pattern_size["square_size"]
+    
+    # Generate object points for a single pattern
+    object_points_single = np.zeros((rows * cols, 3), np.float32)
+    object_points_single[:, :2] = (
+        np.mgrid[0:cols, 0:rows].T.reshape(-1, 2) * square_size
+    )
+    # Replicate the object points for all images
+    object_points = [object_points_single for _ in range(num_images)]
+    
+    return object_points

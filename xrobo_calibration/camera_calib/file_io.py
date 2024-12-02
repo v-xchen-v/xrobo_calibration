@@ -11,9 +11,17 @@ def save_parameters(filepath: str, parameters: dict, format: str = "json"):
         parameters (dict): Dictionary of parameters to save.
         format (str): Format to save the file ("json" or "npy").
     """
+    def serialize_value(value):
+        if isinstance(value, np.ndarray):  # Convert NumPy arrays to lists
+            return value.tolist()
+        elif isinstance(value, (float, int, str, list, dict)):  # Already JSON-compatible types
+            return value
+        else:
+            raise ValueError(f"Unsupported data type {type(value)} for value: {value}")
+
     if format == "json":
         with open(filepath, "w") as f:
-            json.dump({k: v.tolist() for k, v in parameters.items()}, f, indent=4)
+            json.dump({k: serialize_value(v) for k, v in parameters.items()}, f, indent=4)
     elif format == "npy":
         np.savez(filepath, **parameters)
     else:
